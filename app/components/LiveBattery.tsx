@@ -83,10 +83,10 @@ export default function LiveBattery() {
 
   const wattColor = useMemo(() => {
     if (!stats || !stats.watts) {
-      return "black";
+      return "var(--label-color)";
     }
 
-    return stats.watts > 0 ? "red" : "green";
+    return stats.watts > 0 ? "var(--watt-positive-color)" : "var(--watt-negative-color)";
   }, [stats]);
 
   const wattText = useMemo(() => {

@@ -1,18 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function HistoryPage() {
   const [hours, setHours] = useState(4);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const handleThemeChange = (event: MediaQueryListEvent) => {
+      setIsDarkMode(event.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleThemeChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleThemeChange);
+    };
+  }, []);
 
   const url1 = useMemo(() => {
-    return `https://thingspeak.com/channels/1465860/charts/1?bgcolor=%23ffffff&color=%232020d6&dynamic=true&results=${hours * 20}&title=State+of+Charge+%5B%25%5D&type=line&yaxis=SoC&width=auto&height=auto`;
-  }, [hours]);
+    const backgroundColor = isDarkMode ? "%23111111" : "%23ffffff";
+    const chartColor = isDarkMode ? "%237ba2ff" : "%232020d6";
+    return `https://thingspeak.com/channels/1465860/charts/1?bgcolor=${backgroundColor}&color=${chartColor}&dynamic=true&results=${hours * 20}&title=State+of+Charge+%5B%25%5D&type=line&yaxis=SoC&width=auto&height=auto`;
+  }, [hours, isDarkMode]);
 
   const url2 = useMemo(() => {
-    return `https://thingspeak.com/channels/1465877/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=${hours * 20}&title=P+%5BW%5D&type=line&yaxis=Watt&width=auto&height=auto`;
-  }, [hours]);
+    const backgroundColor = isDarkMode ? "%23111111" : "%23ffffff";
+    const chartColor = isDarkMode ? "%23ff7a7a" : "%23d62020";
+    return `https://thingspeak.com/channels/1465877/charts/1?bgcolor=${backgroundColor}&color=${chartColor}&dynamic=true&results=${hours * 20}&title=P+%5BW%5D&type=line&yaxis=Watt&width=auto&height=auto`;
+  }, [hours, isDarkMode]);
 
   return (
     <div className="historyRoot">
