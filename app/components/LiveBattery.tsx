@@ -10,8 +10,39 @@ type BatteryStats = {
   soc?: number;
 };
 
+const randomInRange = (min: number, max: number) => {
+  return Math.random() * (max - min) + min;
+};
+
+const createRandomStats = (): BatteryStats => {
+  return {
+    soc: Number(randomInRange(0, 100).toFixed(1)),
+    watts: Number(randomInRange(-500, 2000).toFixed(1)),
+  };
+};
+
 export default function LiveBattery() {
   const [stats, setStats] = useState<BatteryStats | null>(null);
+  const [debugRandomMode, setDebugRandomMode] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const savedDebugMode = window.localStorage.getItem("debugRandomMode");
+    if (savedDebugMode === "1") {
+      setDebugRandomMode(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem("debugRandomMode", debugRandomMode ? "1" : "0");
+  }, [debugRandomMode]);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -19,12 +50,18 @@ export default function LiveBattery() {
 
     const refresh = async () => {
       try {
-        const response = await fetch("https://batteryapi.liese.space/stats", {
-          cache: "no-store",
-        });
-        const data = (await response.json()) as BatteryStats;
-        if (!cancelled) {
-          setStats(data);
+        if (debugRandomMode) {
+          if (!cancelled) {
+            setStats(createRandomStats());
+          }
+        } else {
+          const response = await fetch("https://batteryapi.liese.space/stats", {
+            cache: "no-store",
+          });
+          const data = (await response.json()) as BatteryStats;
+          if (!cancelled) {
+            setStats(data);
+          }
         }
       } catch {
       } finally {
@@ -42,7 +79,7 @@ export default function LiveBattery() {
         clearTimeout(timeoutId);
       }
     };
-  }, []);
+  }, [debugRandomMode]);
 
   const wattColor = useMemo(() => {
     if (!stats || !stats.watts) {
@@ -65,6 +102,17 @@ export default function LiveBattery() {
 
   return (
     <div className="liveRoot">
+      <div style={{ width: "100%", display: "flex", justifyContent: "flex-end", padding: "0.75rem 1rem 0" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.95rem" }}>
+          <input
+            type="checkbox"
+            checked={debugRandomMode}
+            onChange={(event) => setDebugRandomMode(event.target.checked)}
+          />
+          Debug/Test random BatteryStats
+        </label>
+      </div>
+
       <div className="autoFill topCenter">
         {typeof watts === "number" && watts > 0 ? <AnimatedArrow /> : null}
         {(typeof watts !== "number" || watts === 0) && <div style={{ height: "80px" }} />}
