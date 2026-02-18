@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "release": "npm run build && cd out && zip -r dist.zip * && scp dist.zip liese@liese.space:battery.liese.space/ && cd .. && ssh liese@liese.space 'cd battery.liese.space && unzip -o dist.zip'"
   },
   "dependencies": {
     "next": "16.1.6",

@@ -18,7 +18,7 @@ const randomInRange = (min: number, max: number) =>
 
 const createRandomStats = (): BatteryStats => ({
   soc: Number(randomInRange(0, 100).toFixed(1)),
-  watts: -300 // Number(randomInRange(-500, 2000).toFixed(1)),
+  watts: Number(randomInRange(-500, 2000).toFixed(1)),
 });
 
 const getSocColor = (soc: number): string => {
